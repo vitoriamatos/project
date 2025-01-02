@@ -1,32 +1,26 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const navigate = useNavigate();
-  // Verificar se o usuário está logado (pode ser via localStorage ou redux)
-  useEffect(() => {
-    const user = localStorage.getItem('user'); // Ou qualquer valor de sessão
-    setIsLoggedIn(!!user); // Se existir usuário no localStorage, considera como logado
-  }, []);
 
-  // Função de Logout
+  // Verifica se o usuário está logado sempre que o componente for montado
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    setIsLoggedIn(!!user); // Se houver 'user' no localStorage, consideramos logado
+  }, [isLoggedIn]); // Dependência para garantir atualização do estado
+
   const handleLogout = async () => {
     try {
-      // Faz a requisição para o backend para limpar o cookie (opcional)
       await axios.post('http://localhost:5000/api/logout');
-
-      // Limpar o token do localStorage
       localStorage.removeItem('user');
+      setIsLoggedIn(false); // Atualiza o estado de login
 
-      // Atualizar estado de login
-      setIsLoggedIn(false);
-
-      // Redireciona para a página de login
       navigate('/login');
     } catch (err) {
       console.error('Erro ao fazer logout:', err);
@@ -41,31 +35,28 @@ const Navbar = () => {
       </HamburgerMenu>
       <NavItems isMenuOpen={isMenuOpen}>
         <NavItem>
-          <a href="/">Home</a>
+          <Link to="/">Home</Link>
         </NavItem>
         {isLoggedIn ? (
           <>
             <NavItem>
-              <a href="/profile">Perfil</a>
+              <Link to="/profile">Perfil</Link>
             </NavItem>
             <NavItem>
-              <a href="#" onClick={handleLogout}>
+              <Link to="#" onClick={handleLogout}>
                 Logout
-              </a>
+              </Link>
             </NavItem>
           </>
         ) : (
           <NavItem>
-            <a href="/login" onClick={handleLogout}>
-              Login
-            </a>
+            <Link to="/login">Login</Link>
           </NavItem>
         )}
       </NavItems>
     </Nav>
   );
 };
-
 const Nav = styled.nav`
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
